@@ -1,0 +1,20 @@
+{
+  "name": "create-auction",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "npx hardhat run --network localhost ./scripts/deploy.ts",
+    "deploy-goerli": "npx hardhat run --network goerli ./scripts/deploy.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.12.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  }
+}
