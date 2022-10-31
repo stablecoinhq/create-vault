@@ -59,9 +59,11 @@ async function main() {
   // dart = (new dai amount)
   const dart =
     (toMint) // token can be minimum value to calculate price
-      .mul(spot.div(value1e27)) // exchange rate
-      .div(rate.div(value1e27)) // scaling factor
-      .div(mat.div(value1e27)); // minimum collateral ratio
+      .mul(spot) // exchange rate
+      .mul(value1e27) // spot, rate and mat all have 1e27 decimals, so cancel them out and multiply here
+      .div(rate) // scaling factor
+      .div(mat) // minimum collateral ratio
+      .sub(1000000); // buffer
   console.log("Minting dai");
   console.log(`    parameters: ${JSON.stringify({
     FAU_A,
