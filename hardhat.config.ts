@@ -4,9 +4,9 @@ require("dotenv").config();
 
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: [{ version: "0.5.12" }, { version: "0.5.5" }],
+    compilers: [{ version: "0.5.12" }, { version: "0.5.5" }, { version: "0.6.12" }],
   },
-  // ここにローカル追加
+  defaultNetwork: "goerli",
   networks: {
     hardhat: {
       forking: {
@@ -15,7 +15,8 @@ const config: HardhatUserConfig = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY!}`,
-      accounts: [process.env.PRIVATE_KEY!],
+      accounts: [`0x${process.env.PRIVATE_KEY!}`],
+      chainId: 5
     },
   },
 };

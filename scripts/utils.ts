@@ -21,5 +21,6 @@ export async function submitAndWait(
   wait?: number
 ) {
   const result = await tx;
+  console.log(`    tx result: ${JSON.stringify(result)}`)
   await result.wait(wait);
 }
