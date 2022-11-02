@@ -1,6 +1,7 @@
-import { ethers } from "hardhat";
 import { toHex, submitAndWait } from "./utils";
 import { BigNumber, ContractTransaction, ContractReceipt } from "ethers";
+import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types"
+
 require("dotenv").config();
 const VAT_ADDRESS = "0x1b1FE236166eD0Ac829fa230afE38E61bC281C5e";
 const FAU_JOIN_ADDRESS = "0x0ab0c0B4E13e7B05566a1dA30F63706daf0848BE";
@@ -11,15 +12,19 @@ const FAU_A = toHex("FAU-A");
 
 const confirmationHeight = process.env.CONFIRMATION_HEIGHT ? parseInt(process.env.CONFIRMATION_HEIGHT!) : 0;
 
-async function submitTx(tx: Promise<ContractTransaction>): Promise<ContractReceipt> {
-  return submitAndWait(tx, confirmationHeight);
-}
-
-// 生成するFAUの数量 ... 100 FAU
-const toMint = BigNumber.from("10").pow(20);
 
 // 生成したFau tokenをコラテラルとしてDAIをMintしてVaultを生成する
-async function main() {
+export const createVault = async function (hre: HardhatRuntimeEnvironment, args: TaskArguments) {
+  const ethers = hre.ethers
+
+  async function submitTx(tx: Promise<ContractTransaction>): Promise<ContractReceipt> {
+    return submitAndWait(tx, confirmationHeight);
+  }
+
+  // 生成するFAUの数量 ... 100 FAU
+  const toMint = BigNumber.from("10").pow(20);
+
+
   const [myAccount] = await ethers.getSigners();
   const vat = await ethers.getContractAt("Vat", VAT_ADDRESS);
   const spotContract = await ethers.getContractAt("Spotter", SPOT_ADDRESS);
@@ -37,11 +42,11 @@ async function main() {
 
   console.log(`Put token into vault: address: ${fauJoin.address}, toMint: ${toMint.toString()}`);
   console.log(`approve token for fauJoin.address (approve)`)
-  if (false) {
+  if (1) {
     await submitTx(fauToken.approve(fauJoin.address, toMint));
   }
   console.log(`register value to dai system (join)`)
-  if (false) {
+  if (1) {
     await submitTx(fauJoin.join(myAccount.address, toMint));
   }
 
@@ -52,9 +57,8 @@ async function main() {
   const totalLine = await vat.Line();
   const totalDebt = await vat.debt();
   const { rate, spot, line, Art } = ilkInfoFromVat;
-  const value1e27 = BigNumber.from("10").pow(27);
 
-  // (collateral amount) * (exchange rate) / (scaling factor (rate)) / (minimum collateral ratio)
+  // (collateral amount) * (exchange rate = spot * mat) / (scaling factor (rate)) / (minimum collateral ratio = mat)
   // dart = (new dai amount)
   const dart =
     (toMint) // token can be minimum value to calculate price
@@ -98,8 +102,3 @@ async function main() {
   const { ink, art } = myVault
   console.log(`result: ${JSON.stringify({ myVault, ink, art })}`);
 }
-
-main().then((e) => {
-  console.log(e);
-  process.exit(1);
-});

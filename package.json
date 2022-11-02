@@ -4,10 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "npx hardhat run --network localhost ./scripts/deploy.ts",
-    "deploy-goerli": "npx hardhat run --network goerli ./scripts/deploy.ts",
-    "liquidate-goerli": "npx hardhat run --network goerli ./scripts/liquidate.ts",
-    "bid-goerli": "npx hardhat run --network goerli ./scripts/bid.ts"
+    "balance": "npx hardhat balance",
+    "balance:goerli": "npx hardhat --network goerli balance",
+    "createVault:goerli": "npx hardhat --network goerli createVault",
+    "liquidate:goerli": "npx hardhat --network goerli liquidate",
+    "bid:goerli": "npx hardhat --network goerli bid",
+    "updateRate:goerli": "npx hardhat --network goerli updateRate"
   },
   "keywords": [],
   "author": "",

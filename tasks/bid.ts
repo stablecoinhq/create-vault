@@ -1,6 +1,6 @@
-import { ethers } from "hardhat";
 import { toHex, submitAndWait } from "./utils";
 import { BigNumber, ContractTransaction, ContractReceipt } from "ethers";
+import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types"
 require("dotenv").config();
 const mcdClipFauAAddress = `0xc45A29d6B2585B270a4A2221A94d44254C8FE756`
 const VAT_ADDRESS = "0x1b1FE236166eD0Ac829fa230afE38E61bC281C5e";
@@ -19,7 +19,8 @@ async function submitTx(tx: Promise<ContractTransaction>): Promise<ContractRecei
 }
 
 // 精算の実行
-async function main() {
+export const bid = async function (hre: HardhatRuntimeEnvironment, args: TaskArguments) {
+    const ethers = hre.ethers
 
     const [myAccount] = await ethers.getSigners();
     const vat = await ethers.getContractAt("Vat", VAT_ADDRESS);
@@ -44,8 +45,3 @@ async function main() {
     );
     console.log(result)
 }
-
-main().then((e) => {
-    console.log(e);
-    process.exit(1);
-});

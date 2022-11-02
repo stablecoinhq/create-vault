@@ -1,6 +1,32 @@
-import { HardhatUserConfig } from "hardhat/config";
+import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
+import {
+  balance, createVault,
+  liquidate, bid, updateRate
+} from "./tasks"
+import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
+
+task("balance", "Prints an account's balance")
+  .addParam("account", "The account's address")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => balance(hre, args));
+
+task("createVault", "create vault")
+  .addParam("account", "The account's address")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => createVault(hre, args));
+
+task("liquidate", "liquidate vault")
+  .addParam("urnAddress", "urnAddress to liquidate")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => liquidate(hre, args));
+
+task("bid", "join auction and make bid")
+  .addParam("account", "The account's address")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => bid(hre, args));
+
+task("updateRate", "join auction and make bid")
+  .addParam("ilk", "ilk to update")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => updateRate(hre, args));
+
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -18,6 +44,9 @@ const config: HardhatUserConfig = {
       accounts: [`0x${process.env.PRIVATE_KEY!}`],
       chainId: 5
     },
+  },
+  typechain: {
+    alwaysGenerateOverloads: true
   },
 };
 

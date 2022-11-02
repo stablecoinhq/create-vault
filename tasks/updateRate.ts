@@ -1,30 +1,25 @@
-import { ethers } from "hardhat";
 import { toHex, submitAndWait } from "./utils";
 import { BigNumber, ContractTransaction, ContractReceipt } from "ethers";
+import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types"
 require("dotenv").config();
-const DOG_ADDRESS = "0x85D5AFA199d212189fb4ed397245f93fA4514D27";
-const urnAddress = `0x1E75748a5B1c756D2517d03f059Fd63446bb311a`
-
-const FAU_A = toHex("FAU-A");
-
+const JUG_ADDRESS = '0xDC1De048663D0B9861AB145335B30b6A779904c2'
 const confirmationHeight = process.env.CONFIRMATION_HEIGHT ? parseInt(process.env.CONFIRMATION_HEIGHT!) : 0;
 
 async function submitTx(tx: Promise<ContractTransaction>): Promise<ContractReceipt> {
     return submitAndWait(tx, confirmationHeight);
 }
 
-// 精算の実行
-async function main() {
+export const updateRate = async function (hre: HardhatRuntimeEnvironment, args: TaskArguments) {
+    const ethers = hre.ethers
+    const FAU_A = toHex(args.ilk ?? "FAU-A");
 
     const [myAccount] = await ethers.getSigners();
-    const dogContract = await ethers.getContractAt("Dog", DOG_ADDRESS);
+    const jugContract = await ethers.getContractAt("Jug", JUG_ADDRESS);
+    console.log(`update rate for ilk`)
     const result = await submitTx(
-        dogContract.bark(FAU_A, urnAddress, myAccount.address)
+        jugContract.drip(
+            FAU_A
+        )
     );
     console.log(result)
 }
-
-main().then((e) => {
-    console.log(e);
-    process.exit(1);
-});
