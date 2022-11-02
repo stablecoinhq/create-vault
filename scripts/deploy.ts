@@ -37,33 +37,46 @@ async function main() {
 
   console.log(`Put token into vault: address: ${fauJoin.address}, toMint: ${toMint.toString()}`);
   console.log(`approve token for fauJoin.address (approve)`)
-  await submitTx(fauToken.approve(fauJoin.address, toMint));
+  if (false) {
+    await submitTx(fauToken.approve(fauJoin.address, toMint));
+  }
   console.log(`register value to dai system (join)`)
-  await submitTx(fauJoin.join(myAccount.address, toMint));
+  if (false) {
+    await submitTx(fauJoin.join(myAccount.address, toMint));
+  }
 
   const ilkInfoFromSpot = await spotContract.ilks(FAU_A)
   const { mat } = ilkInfoFromSpot;
 
   const ilkInfoFromVat = await vat.ilks(FAU_A);
-  const { rate, spot } = ilkInfoFromVat;
-  console.log(`    parameters: ${JSON.stringify({
-    mat: mat.toString(),
-    rate: rate.toString(),
-    spot: spot.toString(),
-    toMint: toMint.toString(),
-    ilkInfoFromSpot,
-    ilkInfoFromVat,
-  })}`)
+  const totalLine = await vat.Line();
+  const totalDebt = await vat.debt();
+  const { rate, spot, line, Art } = ilkInfoFromVat;
   const value1e27 = BigNumber.from("10").pow(27);
+
   // (collateral amount) * (exchange rate) / (scaling factor (rate)) / (minimum collateral ratio)
   // dart = (new dai amount)
   const dart =
     (toMint) // token can be minimum value to calculate price
-      .mul(spot) // exchange rate
-      .mul(value1e27) // spot, rate and mat all have 1e27 decimals, so cancel them out and multiply here
+      .mul(spot) // exchange rate with safety margin
       .div(rate) // scaling factor
-      .div(mat) // minimum collateral ratio
       .sub(1); // buffer
+
+  console.log(`    parameters: ${JSON.stringify({
+    mat: mat.toString(),
+    rate: rate.toString(),
+    spot: spot.toString(),
+    line: line.toString(),
+    Art: Art.toString(),
+    ArtTimesRateLessThanLine: (Art.add(dart)).mul(rate).lt(line),
+    totalLine: totalLine.toString(),
+    totalDebt: totalDebt.toString(),
+    totalDebtLessThanTotalLine: totalDebt.add(rate.mul(dart)).lt(totalLine),
+    toMint: toMint.toString(),
+    ilkInfoFromSpot,
+    ilkInfoFromVat,
+  })}`)
+
   console.log("Minting dai");
   console.log(`    parameters: ${JSON.stringify({
     FAU_A,
@@ -77,7 +90,8 @@ async function main() {
       myAccount.address,
       myAccount.address,
       toMint,
-      dart
+      dart,
+      // { nonce: 6, gasPrice: 34906672017 }
     )
   );
   const myVault = await vat.urns(FAU_A, myAccount.address);
