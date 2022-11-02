@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { toHex, submitAndWait } from "./utils";
-import { BigNumber, ContractTransaction } from "ethers";
+import { BigNumber, ContractTransaction, ContractReceipt } from "ethers";
 require("dotenv").config();
 const VAT_ADDRESS = "0x1b1FE236166eD0Ac829fa230afE38E61bC281C5e";
 const FAU_JOIN_ADDRESS = "0x0ab0c0B4E13e7B05566a1dA30F63706daf0848BE";
@@ -11,7 +11,7 @@ const FAU_A = toHex("FAU-A");
 
 const confirmationHeight = process.env.CONFIRMATION_HEIGHT ? parseInt(process.env.CONFIRMATION_HEIGHT!) : 0;
 
-async function submitTx(tx: Promise<ContractTransaction>) {
+async function submitTx(tx: Promise<ContractTransaction>): Promise<ContractReceipt> {
   return submitAndWait(tx, confirmationHeight);
 }
 
@@ -63,7 +63,7 @@ async function main() {
       .mul(value1e27) // spot, rate and mat all have 1e27 decimals, so cancel them out and multiply here
       .div(rate) // scaling factor
       .div(mat) // minimum collateral ratio
-      .sub(1000000); // buffer
+      .sub(1); // buffer
   console.log("Minting dai");
   console.log(`    parameters: ${JSON.stringify({
     FAU_A,

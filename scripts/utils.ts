@@ -1,4 +1,4 @@
-import { ContractTransaction } from "ethers";
+import { ContractTransaction, ContractReceipt } from "ethers";
 
 function ascii_to_hexa(str: string) {
   var arr = [];
@@ -19,8 +19,9 @@ export function toHex(str: string) {
 export async function submitAndWait(
   tx: Promise<ContractTransaction>,
   wait?: number
-) {
+): Promise<ContractReceipt> {
   const result = await tx;
   console.log(`    tx result: ${JSON.stringify(result)}`)
-  await result.wait(wait);
+  const receipt = await result.wait(wait);
+  return receipt;
 }

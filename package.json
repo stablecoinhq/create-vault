@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "deploy": "npx hardhat run --network localhost ./scripts/deploy.ts",
-    "deploy-goerli": "npx hardhat run --network goerli ./scripts/deploy.ts"
+    "deploy-goerli": "npx hardhat run --network goerli ./scripts/deploy.ts",
+    "liquidate-goerli": "npx hardhat run --network goerli ./scripts/liquidate.ts",
+    "bid-goerli": "npx hardhat run --network goerli ./scripts/bid.ts"
   },
   "keywords": [],
   "author": "",
