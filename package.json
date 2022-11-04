@@ -15,7 +15,8 @@
     "viewVaultState:goerli": "npx hardhat --network goerli viewVaultState",
     "viewVaultState:mainnet": "npx hardhat --network mainnet viewVaultState",
     "resetAuction:goerli": "npx hardhat --network goerli resetAuction",
-    "viewAuction:goerli": "npx hardhat --network goerli viewAuction"
+    "viewAuction:goerli": "npx hardhat --network goerli viewAuction",
+    "help": "npx hardhat --help"
   },
   "keywords": [],
   "author": "",
