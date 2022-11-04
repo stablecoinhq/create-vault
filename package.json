@@ -9,7 +9,13 @@
     "createVault:goerli": "npx hardhat --network goerli createVault",
     "liquidate:goerli": "npx hardhat --network goerli liquidate",
     "bid:goerli": "npx hardhat --network goerli bid",
-    "updateRate:goerli": "npx hardhat --network goerli updateRate"
+    "bid:hardhat": "npx hardhat --network hardhat bid",
+    "bid:local": "npx hardhat --network localhost bid",
+    "updateRate:goerli": "npx hardhat --network goerli updateRate",
+    "viewVaultState:goerli": "npx hardhat --network goerli viewVaultState",
+    "viewVaultState:mainnet": "npx hardhat --network mainnet viewVaultState",
+    "resetAuction:goerli": "npx hardhat --network goerli resetAuction",
+    "viewAuction:goerli": "npx hardhat --network goerli viewAuction"
   },
   "keywords": [],
   "author": "",

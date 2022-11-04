@@ -3,7 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
 import {
   balance, createVault,
-  liquidate, bid, updateRate
+  liquidate, bid, updateRate, viewVaultState, resetAuction, viewAuction
 } from "./tasks"
 import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
@@ -20,12 +20,31 @@ task("liquidate", "liquidate vault")
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => liquidate(hre, args));
 
 task("bid", "join auction and make bid")
-  .addParam("account", "The account's address")
+  .addOptionalParam("gasLimit", "gas limit", undefined)
+  .addOptionalParam("nonce", "nonce value", undefined)
+  .addParam("auctionId", "auction id to take")
+  .addParam("amountToTake", "amount to take")
+  .addParam("maxPrice", "max price to take")
+  .addParam("receiver", "receiver of collateral")
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => bid(hre, args));
 
-task("updateRate", "join auction and make bid")
+task("updateRate", "update rate to start auction")
   .addParam("ilk", "ilk to update")
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => updateRate(hre, args));
+
+task("viewVaultState", "view vault state to check condition before/after auction")
+  .addParam("urnAddress", "urnAddress to watch")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewVaultState(hre, args));
+
+task("resetAuction", "view vault state to check condition before/after auction")
+  .addOptionalParam("nonce", "nonce value", undefined)
+  .addParam("auctionId", "auction id to reset")
+  .addParam("receiver", "receiver of collateral")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => resetAuction(hre, args));
+
+task("viewAuction", "view auction state to check condition")
+  .addParam("auctionId", "auction id to reset")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewAuction(hre, args));
 
 
 const config: HardhatUserConfig = {
@@ -43,6 +62,11 @@ const config: HardhatUserConfig = {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY!}`,
       accounts: [`0x${process.env.PRIVATE_KEY!}`],
       chainId: 5
+    },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY!}`,
+      accounts: [`0x${process.env.PRIVATE_KEY!}`],
+      chainId: 1
     },
   },
   typechain: {
