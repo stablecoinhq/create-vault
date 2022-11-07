@@ -27,9 +27,9 @@ export const liquidate = async function (hre: HardhatRuntimeEnvironment, args: T
     const urnInfoFromVat = await vatContract.urns(FAU_A, urnAddress);
     const { ink, art } = urnInfoFromVat
 
-    const isSafe = ink.mul(spot).lt(art.mul(rate));
+    const isUnsafe = ink.mul(spot).lt(art.mul(rate));
     console.log(JSON.stringify({
-        isSafe,
+        isUnsafe,
         ink: ink.toString(),
         art: art.toString(),
         spot: spot.toString(),
@@ -38,7 +38,7 @@ export const liquidate = async function (hre: HardhatRuntimeEnvironment, args: T
         artRate: art.mul(rate).toString(),
     }, null, 2))
 
-    if (isSafe) {
+    if (isUnsafe) {
         const result = await submitTx(
             dogContract.bark(FAU_A, urnAddress, myAccount.address)
         );

@@ -12,7 +12,7 @@ task("balance", "Prints an account's balance")
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => balance(hre, args));
 
 task("createVault", "create vault")
-  .addParam("account", "The account's address")
+  .addOptionalParam("amount", "collateral amount", "100")
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => createVault(hre, args));
 
 task("liquidate", "liquidate vault")

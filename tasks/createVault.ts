@@ -22,7 +22,7 @@ export const createVault = async function (hre: HardhatRuntimeEnvironment, args:
   }
 
   // 生成するFAUの数量 ... 100 FAU
-  const toMint = BigNumber.from("10").pow(20);
+  const toMint = BigNumber.from(args.amount ?? 100).mul(BigNumber.from("10").pow(18));
 
 
   const [myAccount] = await ethers.getSigners();
