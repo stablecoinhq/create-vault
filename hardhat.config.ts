@@ -2,22 +2,35 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
 import {
-  balance, createVault,
-  liquidate, bid, updateRate, viewVaultState, resetAuction, viewAuction
-} from "./tasks"
+  balance,
+  createVault,
+  liquidate,
+  bid,
+  updateRate,
+  viewVaultState,
+  resetAuction,
+  viewAuction,
+  viewParams,
+} from "./tasks";
 import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
 task("balance", "Prints an account's balance")
   .addParam("account", "The account's address")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => balance(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    balance(hre, args)
+  );
 
 task("createVault", "create vault")
   .addOptionalParam("amount", "collateral amount", "100")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => createVault(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    createVault(hre, args)
+  );
 
 task("liquidate", "liquidate vault")
   .addParam("urnAddress", "urnAddress to liquidate")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => liquidate(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    liquidate(hre, args)
+  );
 
 task("bid", "join auction and make bid")
   .addOptionalParam("gasLimit", "gas limit", undefined)
@@ -26,30 +39,50 @@ task("bid", "join auction and make bid")
   .addParam("amountToTake", "amount to take")
   .addParam("maxPrice", "max price to take")
   .addParam("receiver", "receiver of collateral")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => bid(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    bid(hre, args)
+  );
 
 task("updateRate", "update rate to start auction")
   .addParam("ilk", "ilk to update")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => updateRate(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    updateRate(hre, args)
+  );
 
-task("viewVaultState", "view vault state to check condition before/after auction")
+task(
+  "viewVaultState",
+  "view vault state to check condition before/after auction"
+)
   .addParam("urnAddress", "urnAddress to watch")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewVaultState(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    viewVaultState(hre, args)
+  );
 
 task("resetAuction", "view vault state to check condition before/after auction")
   .addOptionalParam("nonce", "nonce value", undefined)
   .addParam("auctionId", "auction id to reset")
   .addParam("receiver", "receiver of collateral")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => resetAuction(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    resetAuction(hre, args)
+  );
 
 task("viewAuction", "view auction state to check condition")
   .addParam("auctionId", "auction id to reset")
-  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewAuction(hre, args));
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    viewAuction(hre, args)
+  );
 
+task("viewParams", "view each contract's parameters").setAction(
+  (_args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewParams(hre)
+);
 
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: [{ version: "0.5.12" }, { version: "0.5.5" }, { version: "0.6.12" }],
+    compilers: [
+      { version: "0.5.12" },
+      { version: "0.5.5" },
+      { version: "0.6.12" },
+    ],
   },
   defaultNetwork: "goerli",
   networks: {
@@ -61,16 +94,16 @@ const config: HardhatUserConfig = {
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY!}`,
       accounts: [`0x${process.env.PRIVATE_KEY!}`],
-      chainId: 5
+      chainId: 5,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY!}`,
       accounts: [`0x${process.env.PRIVATE_KEY!}`],
-      chainId: 1
+      chainId: 1,
     },
   },
   typechain: {
-    alwaysGenerateOverloads: true
+    alwaysGenerateOverloads: true,
   },
 };
 

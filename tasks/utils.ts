@@ -1,4 +1,4 @@
-import { ContractTransaction, ContractReceipt } from "ethers";
+import { ContractTransaction, ContractReceipt, BigNumber } from "ethers";
 
 function ascii_to_hexa(str: string) {
   var arr = [];
@@ -21,7 +21,26 @@ export async function submitAndWait(
   wait?: number
 ): Promise<ContractReceipt> {
   const result = await tx;
-  console.log(`    tx result: ${JSON.stringify(result)}`)
+  console.log(`    tx result: ${JSON.stringify(result)}`);
   const receipt = await result.wait(wait);
   return receipt;
+}
+
+export enum Unit {
+  Wad = 18,
+  Ray = 27,
+  Rad = 45,
+}
+
+export const constants = {
+  WAD: BigNumber.from(10).pow(Unit.Wad),
+  RAY: BigNumber.from(10).pow(Unit.Ray),
+  RAD: BigNumber.from(10).pow(Unit.Rad),
+};
+
+export function displayUnits(num: BigNumber, unit: Unit): number {
+  function toStandard(targetNum: BigNumber, divBy: BigNumber): number {
+    return targetNum.mul(100000).div(divBy).toNumber() / 100000;
+  }
+  return toStandard(num, BigNumber.from(10).pow(unit));
 }

@@ -6,3 +6,4 @@ export * from "./updateRate"
 export * from "./viewVaultState"
 export * from "./resetAuction"
 export * from "./viewAuction"
+export * from "./viewParams";
