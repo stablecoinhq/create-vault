@@ -11,6 +11,9 @@ import {
   resetAuction,
   viewAuction,
   viewParams,
+  lockForVote,
+  freeForVote,
+  voteForAddressList,
 } from "./tasks";
 import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
@@ -67,7 +70,7 @@ task("resetAuction", "view vault state to check condition before/after auction")
   );
 
 task("viewAuction", "view auction state to check condition")
-  .addParam("auctionId", "auction id to reset")
+  .addParam("auctionId", "auction id to view")
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
     viewAuction(hre, args)
   );
@@ -75,6 +78,27 @@ task("viewAuction", "view auction state to check condition")
 task("viewParams", "view each contract's parameters").setAction(
   (_args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewParams(hre)
 );
+
+task("lockForVote", "lock some maker token for voting")
+  .addParam("amount", "amount to lock maker token")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    lockForVote(hre, args)
+  );
+
+task("freeForVote", "unlock some maker token for voting")
+  .addParam("amount", "amount to unlock maker token")
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    freeForVote(hre, args)
+  );
+
+task(
+  "voteForAddressList",
+  "vote for address list. create set of candidates if it does not exists. ")
+  .addParam("addressList", 'comma-separated address list to vote. list will be sorted when given to contract.')
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    voteForAddressList(hre, args)
+  );
+
 
 const config: HardhatUserConfig = {
   solidity: {

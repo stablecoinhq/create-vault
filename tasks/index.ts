@@ -7,3 +7,6 @@ export * from "./viewVaultState"
 export * from "./resetAuction"
 export * from "./viewAuction"
 export * from "./viewParams";
+export * from "./lockForVote"
+export * from "./freeForVote"
+export * from "./voteForAddressList"
