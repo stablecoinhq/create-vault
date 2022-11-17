@@ -15,8 +15,6 @@ type Contracts =
   | "MCD_POT"
   | "ILK_REGISTRY";
 
-// ilk毎に設定されているパラメーターはとりあえず無視
-// ilk関係は大体dai statsにある
 class ChainLog {
   constructor(private readonly chainLog: ChainLogContract) {}
 
@@ -24,14 +22,15 @@ class ChainLog {
     return this.chainLog.getAddress(toHex(contract));
   }
 
-  static async get(ethers: HardhatEthersHelpers) {
+  static async fromEthers(ethers: HardhatEthersHelpers) {
     const chainlog = await ethers.getContractAt("ChainLog", CHAINLOG_MAINNET);
     return new ChainLog(chainlog);
   }
 }
+
 export async function viewParams(hre: HardhatRuntimeEnvironment) {
   const { ethers } = hre;
-  const chainlog = await ChainLog.get(ethers);
+  const chainlog = await ChainLog.fromEthers(ethers);
   const { chainId } = hre.network.config;
 
   if (!chainId || chainId !== 1) {
@@ -161,20 +160,63 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
 
   // とりあえずETH関連のClipだけ
 
-  console.log({
-    dog,
-    vow,
-    chief,
-    pause,
-    flop,
-    flap,
-    vat: {
-      ilks: [...ilkData],
-    },
-    jug,
-    pot,
-    clip: [...clips],
-  });
+  console.log(
+    JSON.stringify(
+      {
+        dog: {
+          Hole: dog.Hole.toString(),
+          ilks: [...dog.ilks].map(({ ilk, chop, hole }) => ({
+            ilk,
+            chop: chop.toString(),
+            hole: hole.toString(),
+          })),
+        },
+        vow: {
+          wait: vow.wait,
+          dump: vow.dump.toString(),
+          sump: vow.sump.toString(),
+          bump: vow.bump.toString(),
+          hump: vow.hump.toString(),
+        },
+        chief,
+        pause,
+        flop: {
+          beg: flop.beg.toString(),
+          pad: flop.pad.toString(),
+          ttl: flop.ttl,
+          tau: flop.tau,
+        },
+        flap: {
+          beg: flap.beg.toString(),
+          ttl: flap.ttl,
+          tau: flap.tau,
+        },
+        vat: {
+          ilks: [...ilkData].map(({ ilk, line, dust }) => ({
+            ilk,
+            line: line.toString(),
+            dust: dust.toString(),
+          })),
+        },
+        jug: {
+          base: jug.base,
+        },
+        pot: {
+          dsr: pot.dsr.toString(),
+        },
+        clip: [...clips].map(({ contract, buf, tail, cusp, chip }) => ({
+          contract,
+          buf: buf.toString(),
+          tail: tail.toString(),
+          cusp: cusp.toString(),
+          chip: chip.toString(),
+        })),
+      },
+      null,
+      2
+    )
+  );
+  console.log("Normalized values");
   console.log(
     JSON.stringify(
       {
