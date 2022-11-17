@@ -41,7 +41,7 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
   // 対象の担保
   const ilks: string[] = ["ETH-A"];
 
-  // dog.Hole [rad]
+  // dog.Hole [rad], chop [Wad], hole [Rad]
   const dogAddress = await chainlog.getAddressOf("MCD_DOG");
   const dogContract = await ethers.getContractAt("Dog", dogAddress);
   const dogIlks = await Promise.all(
@@ -131,6 +131,18 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
     base: await jugContract.base(),
   };
 
+  // duty ???
+  const jugIlk = await Promise.all(
+    ilks.map(async (i) => {
+      const ilk = await jugContract.ilks(toHex(i));
+      const { duty } = ilk;
+      return {
+        ilk: i,
+        duty,
+      };
+    })
+  );
+
   // pot dsr [ray]
   const potAddress = await chainlog.getAddressOf("MCD_POT");
   const potContract = await ethers.getContractAt("Pot", potAddress);
@@ -205,6 +217,7 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
           tau: flap.tau,
         },
         vat: {
+          Line: vat.Line.toString(),
           ilks: [...ilkData].map(({ ilk, line, dust }) => ({
             ilk,
             line: line.toString(),
@@ -212,17 +225,22 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
           })),
         },
         jug: {
-          base: jug.base,
+          base: jug.base.toString(),
+          ilk: [...jugIlk].map(({ ilk, duty }) => ({
+            ilk,
+            duty: duty.toString(),
+          })),
         },
         pot: {
           dsr: pot.dsr.toString(),
         },
-        clip: [...clips].map(({ contract, buf, tail, cusp, chip }) => ({
+        clip: [...clips].map(({ contract, buf, tail, cusp, chip, tip }) => ({
           contract,
           buf: buf.toString(),
           tail: tail.toString(),
           cusp: cusp.toString(),
           chip: chip.toString(),
+          tip: tip.toString(),
         })),
         spot: [...spotIlk].map(({ ilk, mat }) => ({
           ilk,
@@ -279,6 +297,10 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
         },
         jug: {
           base: normalize(jug.base, Unit.Ray),
+          ilk: [...jugIlk].map(({ilk, duty}) => ({
+            ilk,
+            duty: normalize(duty, Unit.Ray),
+          }))
         },
         pot: {
           dsr: normalize(pot.dsr, Unit.Ray),
@@ -291,10 +313,10 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
           chip: normalize(chip, Unit.Wad),
           tip: normalize(tip, Unit.Rad),
         })),
-        spot: [...spotIlk].map(({ilk, mat}) => ({
+        spot: [...spotIlk].map(({ ilk, mat }) => ({
           ilk,
-          mat: normalize(mat, Unit.Ray)
-        }))
+          mat: normalize(mat, Unit.Ray),
+        })),
       },
       null,
       2
