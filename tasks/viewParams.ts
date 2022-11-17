@@ -1,7 +1,6 @@
 import { HardhatEthersHelpers, HardhatRuntimeEnvironment } from "hardhat/types";
 import { ChainLog as ChainLogContract } from "../typechain-types";
-import { toHex, displayUnits, Unit } from "./utils";
-import { BigNumber } from "ethers";
+import { toHex, displayUnits as normalize, Unit } from "./utils";
 
 const CHAINLOG_MAINNET = "0xda0ab1e0017debcd72be8599041a2aa3ba7e740f";
 type Contracts =
@@ -36,22 +35,26 @@ class ChainLog {
 export async function viewParams(hre: HardhatRuntimeEnvironment) {
   const { ethers } = hre;
   const chainlog = await ChainLog.get(ethers);
+  const { chainId } = hre.network.config;
 
+  if (!chainId || chainId !== 1) {
+    throw new Error("This command only works on mainnet");
+  }
   // dog.Hole [rad]
   const dogAddress = await chainlog.getAddressOf("MCD_DOG");
   const dogContract = await ethers.getContractAt("Dog", dogAddress);
   const dog = {
-    Hole: displayUnits(await dogContract.Hole(), Unit.Rad),
+    Hole: await dogContract.Hole(),
   };
   // vow wait [seconds] dump [wad] sump [rad] bump [rad] hump [rad]
   const vowAddress = await chainlog.getAddressOf("MCD_VOW");
   const vowContract = await ethers.getContractAt("Vow", vowAddress);
   const vow = {
     wait: (await vowContract.wait()).toNumber(),
-    dump: displayUnits(await vowContract.dump(), Unit.Wad),
-    sump: displayUnits(await vowContract.sump(), Unit.Rad),
-    bump: displayUnits(await vowContract.bump(), Unit.Rad),
-    hump: displayUnits(await vowContract.hump(), Unit.Rad),
+    dump: await vowContract.dump(),
+    sump: await vowContract.sump(),
+    bump: await vowContract.bump(),
+    hump: await vowContract.hump(),
   };
 
   // chief MAX_YAYS [uint]
@@ -72,8 +75,8 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
   const flopAddress = await chainlog.getAddressOf("MCD_FLOP");
   const flopContract = await ethers.getContractAt("Flopper", flopAddress);
   const flop = {
-    beg: displayUnits(await flopContract.beg(), Unit.Wad),
-    pad: displayUnits(await flopContract.pad(), Unit.Wad),
+    beg: await flopContract.beg(),
+    pad: await flopContract.pad(),
     ttl: await flopContract.ttl(),
     tau: await flopContract.tau(),
   };
@@ -82,7 +85,7 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
   const flapAddress = await chainlog.getAddressOf("MCD_FLAP");
   const flapContract = await ethers.getContractAt("Flapper", flapAddress);
   const flap = {
-    beg: displayUnits(await flapContract.beg(), Unit.Wad),
+    beg: await flapContract.beg(),
     ttl: await flapContract.ttl(),
     tau: await flapContract.tau(),
   };
@@ -91,14 +94,14 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
   const vatAddress = await chainlog.getAddressOf("MCD_VAT");
   const vatContract = await ethers.getContractAt("Vat", vatAddress);
   const vat = {
-    Line: displayUnits(await vatContract.Line(), Unit.Rad),
+    Line: await vatContract.Line(),
   };
 
   // jug base [ray]
   const jugAddress = await chainlog.getAddressOf("MCD_JUG");
   const jugContract = await ethers.getContractAt("Jug", jugAddress);
   const jug = {
-    base: displayUnits(await jugContract.base(), Unit.Ray),
+    base: await jugContract.base(),
   };
 
   // pot dsr [ray]
@@ -106,7 +109,7 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
   console.log(`potAddress ${potAddress}`);
   const potContract = await ethers.getContractAt("Pot", potAddress);
   const pot = {
-    dsr: displayUnits(await potContract.dsr(), Unit.Ray),
+    dsr: await potContract.dsr(),
   };
 
   // clip buf [ray], tail [seconds], cusp [ray], chip [wad], tip [rad]
@@ -115,7 +118,7 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
     { contract: "MCD_CLIP_ETH_B", symbol: "ETH" },
     { contract: "MCD_CLIP_ETH_C", symbol: "ETH" },
   ];
-  const results = await Promise.all(
+  const clips = await Promise.all(
     clipContracts.map(async (c) => {
       const { contract } = c;
       const clipAddress = await chainlog.getAddressOf(contract);
@@ -127,11 +130,11 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
       const tip = await clip.tip();
       return {
         clip: contract,
-        buf: displayUnits(buf, Unit.Ray),
+        buf,
         tail: tail.toNumber(),
-        cusp: displayUnits(cusp, Unit.Ray),
-        chip: displayUnits(chip, Unit.Wad),
-        tip: displayUnits(tip, Unit.Rad),
+        cusp,
+        chip,
+        tip,
       };
     })
   );
@@ -148,6 +151,50 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
     vat,
     jug,
     pot,
-    clip: [...results],
+    clip: [...clips],
+  });
+  console.log({
+    dog: { Hole: normalize(dog.Hole, Unit.Rad) },
+    vow: {
+      wait: vow.wait,
+      dump: normalize(vow.dump, Unit.Wad),
+      sump: normalize(vow.sump, Unit.Rad),
+      bump: normalize(vow.bump, Unit.Rad),
+      hump: normalize(vow.hump, Unit.Rad),
+    },
+    chief: {
+      MAX_YAYS: chief.MAX_YAYS,
+    },
+    pause: {
+      delay: pause.delay,
+    },
+    flop: {
+      beg: normalize(flop.beg, Unit.Wad),
+      pad: normalize(flop.pad, Unit.Wad),
+      ttl: flop.ttl,
+      tau: flop.tau,
+    },
+    flap: {
+      beg: normalize(flap.beg, Unit.Wad),
+      ttl: flap.ttl,
+      tau: flap.tau,
+    },
+    vat: {
+      Line: normalize(vat.Line, Unit.Rad),
+    },
+    jug: {
+      base: normalize(jug.base, Unit.Ray),
+    },
+    pot: {
+      dsr: normalize(pot.dsr, Unit.Ray),
+    },
+    clips: [...clips].map((clip) => ({
+      clip: clip.clip,
+      buf: normalize(clip.buf, Unit.Ray),
+      tail: clip.tail,
+      cusp: normalize(clip.cusp, Unit.Ray),
+      chip: normalize(clip.chip, Unit.Wad),
+      tip: normalize(clip.tip, Unit.Rad),
+    })),
   });
 }
