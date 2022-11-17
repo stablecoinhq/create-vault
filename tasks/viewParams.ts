@@ -18,6 +18,8 @@ type Contracts =
 class ChainLog {
   constructor(private readonly chainLog: ChainLogContract) {}
 
+  async getAddressOf(contract: string): Promise<string>;
+  async getAddressOf(contract: Contracts): Promise<string>;
   async getAddressOf(contract: Contracts | string) {
     return this.chainLog.getAddress(toHex(contract));
   }
@@ -158,7 +160,18 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
     })
   );
 
-  // とりあえずETH関連のClipだけ
+  const spotAddress = await chainlog.getAddressOf("MCD_SPOT");
+  const spotContract = await ethers.getContractAt("Spotter", spotAddress);
+  const spotIlk = await Promise.all(
+    ilks.map(async (i) => {
+      const ilk = await spotContract.ilks(toHex(i));
+      const { mat } = ilk;
+      return {
+        ilk: i,
+        mat,
+      };
+    })
+  );
 
   console.log(
     JSON.stringify(
@@ -210,6 +223,10 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
           tail: tail.toString(),
           cusp: cusp.toString(),
           chip: chip.toString(),
+        })),
+        spot: [...spotIlk].map(({ ilk, mat }) => ({
+          ilk,
+          mat: mat.toString(),
         })),
       },
       null,
@@ -274,6 +291,10 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
           chip: normalize(chip, Unit.Wad),
           tip: normalize(tip, Unit.Rad),
         })),
+        spot: [...spotIlk].map(({ilk, mat}) => ({
+          ilk,
+          mat: normalize(mat, Unit.Ray)
+        }))
       },
       null,
       2
