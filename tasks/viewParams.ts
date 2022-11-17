@@ -15,15 +15,12 @@ type Contracts =
   | "MCD_POT"
   | "ILK_REGISTRY";
 
-type ClipContracts = "MCD_CLIP_ETH_A" | "MCD_CLIP_ETH_B" | "MCD_CLIP_ETH_C";
-type CurrencySymobl = "ETH";
-
 // ilk毎に設定されているパラメーターはとりあえず無視
 // ilk関係は大体dai statsにある
 class ChainLog {
   constructor(private readonly chainLog: ChainLogContract) {}
 
-  async getAddressOf(contract: Contracts | ClipContracts) {
+  async getAddressOf(contract: Contracts | string) {
     return this.chainLog.getAddress(toHex(contract));
   }
 
@@ -40,11 +37,26 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
   if (!chainId || chainId !== 1) {
     throw new Error("This command only works on mainnet");
   }
+  // 対象の担保
+  const ilks: string[] = ["ETH-A"];
+
   // dog.Hole [rad]
   const dogAddress = await chainlog.getAddressOf("MCD_DOG");
   const dogContract = await ethers.getContractAt("Dog", dogAddress);
+  const dogIlks = await Promise.all(
+    ilks.map(async (i) => {
+      const ilk = await dogContract.ilks(toHex(i));
+      const { chop, hole } = ilk;
+      return {
+        ilk: i,
+        chop,
+        hole,
+      };
+    })
+  );
   const dog = {
     Hole: await dogContract.Hole(),
+    ilks: [...dogIlks],
   };
   // vow wait [seconds] dump [wad] sump [rad] bump [rad] hump [rad]
   const vowAddress = await chainlog.getAddressOf("MCD_VOW");
@@ -93,6 +105,20 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
   // vat Line [rad]
   const vatAddress = await chainlog.getAddressOf("MCD_VAT");
   const vatContract = await ethers.getContractAt("Vat", vatAddress);
+
+  // vat line [rad] dust [rad]
+  const ilkData = await Promise.all(
+    ilks.map(async (ilkKey) => {
+      const ilk = await vatContract.ilks(toHex(ilkKey));
+      const { line, dust } = ilk;
+      return {
+        ilk: ilkKey,
+        line,
+        dust,
+      };
+    })
+  );
+
   const vat = {
     Line: await vatContract.Line(),
   };
@@ -106,21 +132,15 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
 
   // pot dsr [ray]
   const potAddress = await chainlog.getAddressOf("MCD_POT");
-  console.log(`potAddress ${potAddress}`);
   const potContract = await ethers.getContractAt("Pot", potAddress);
   const pot = {
     dsr: await potContract.dsr(),
   };
 
   // clip buf [ray], tail [seconds], cusp [ray], chip [wad], tip [rad]
-  const clipContracts: { contract: ClipContracts; symbol: CurrencySymobl }[] = [
-    { contract: "MCD_CLIP_ETH_A", symbol: "ETH" },
-    { contract: "MCD_CLIP_ETH_B", symbol: "ETH" },
-    { contract: "MCD_CLIP_ETH_C", symbol: "ETH" },
-  ];
   const clips = await Promise.all(
-    clipContracts.map(async (c) => {
-      const { contract } = c;
+    ilks.map(async (i) => {
+      const contract = `MCD_CLIP_${i.split("-").join("_")}`;
       const clipAddress = await chainlog.getAddressOf(contract);
       const clip = await ethers.getContractAt("Clipper", clipAddress);
       const buf = await clip.buf();
@@ -129,7 +149,7 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
       const chip = await clip.chip();
       const tip = await clip.tip();
       return {
-        clip: contract,
+        contract,
         buf,
         tail: tail.toNumber(),
         cusp,
@@ -148,53 +168,73 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
     pause,
     flop,
     flap,
-    vat,
+    vat: {
+      ilks: [...ilkData],
+    },
     jug,
     pot,
     clip: [...clips],
   });
-  console.log({
-    dog: { Hole: normalize(dog.Hole, Unit.Rad) },
-    vow: {
-      wait: vow.wait,
-      dump: normalize(vow.dump, Unit.Wad),
-      sump: normalize(vow.sump, Unit.Rad),
-      bump: normalize(vow.bump, Unit.Rad),
-      hump: normalize(vow.hump, Unit.Rad),
-    },
-    chief: {
-      MAX_YAYS: chief.MAX_YAYS,
-    },
-    pause: {
-      delay: pause.delay,
-    },
-    flop: {
-      beg: normalize(flop.beg, Unit.Wad),
-      pad: normalize(flop.pad, Unit.Wad),
-      ttl: flop.ttl,
-      tau: flop.tau,
-    },
-    flap: {
-      beg: normalize(flap.beg, Unit.Wad),
-      ttl: flap.ttl,
-      tau: flap.tau,
-    },
-    vat: {
-      Line: normalize(vat.Line, Unit.Rad),
-    },
-    jug: {
-      base: normalize(jug.base, Unit.Ray),
-    },
-    pot: {
-      dsr: normalize(pot.dsr, Unit.Ray),
-    },
-    clips: [...clips].map((clip) => ({
-      clip: clip.clip,
-      buf: normalize(clip.buf, Unit.Ray),
-      tail: clip.tail,
-      cusp: normalize(clip.cusp, Unit.Ray),
-      chip: normalize(clip.chip, Unit.Wad),
-      tip: normalize(clip.tip, Unit.Rad),
-    })),
-  });
+  console.log(
+    JSON.stringify(
+      {
+        dog: {
+          Hole: normalize(dog.Hole, Unit.Rad),
+          ilks: [...dog.ilks].map(({ ilk, chop, hole }) => ({
+            ilk,
+            chop: normalize(chop, Unit.Wad),
+            hole: normalize(hole, Unit.Rad),
+          })),
+        },
+        vow: {
+          wait: vow.wait,
+          dump: normalize(vow.dump, Unit.Wad),
+          sump: normalize(vow.sump, Unit.Rad),
+          bump: normalize(vow.bump, Unit.Rad),
+          hump: normalize(vow.hump, Unit.Rad),
+        },
+        chief: {
+          MAX_YAYS: chief.MAX_YAYS,
+        },
+        pause: {
+          delay: pause.delay,
+        },
+        flop: {
+          beg: normalize(flop.beg, Unit.Wad),
+          pad: normalize(flop.pad, Unit.Wad),
+          ttl: flop.ttl,
+          tau: flop.tau,
+        },
+        flap: {
+          beg: normalize(flap.beg, Unit.Wad),
+          ttl: flap.ttl,
+          tau: flap.tau,
+        },
+        vat: {
+          Line: normalize(vat.Line, Unit.Rad),
+          ilks: [...ilkData].map(({ ilk, line, dust }) => ({
+            ilk,
+            line: normalize(line, Unit.Rad),
+            dust: normalize(dust, Unit.Rad),
+          })),
+        },
+        jug: {
+          base: normalize(jug.base, Unit.Ray),
+        },
+        pot: {
+          dsr: normalize(pot.dsr, Unit.Ray),
+        },
+        clips: [...clips].map(({ contract, buf, tail, cusp, chip, tip }) => ({
+          contract,
+          buf: normalize(buf, Unit.Ray),
+          tail: tail,
+          cusp: normalize(cusp, Unit.Ray),
+          chip: normalize(chip, Unit.Wad),
+          tip: normalize(tip, Unit.Rad),
+        })),
+      },
+      null,
+      2
+    )
+  );
 }
