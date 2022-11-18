@@ -13,7 +13,8 @@ type Contracts =
   | "MCD_VOW"
   | "MCD_PAUSE"
   | "MCD_POT"
-  | "ILK_REGISTRY";
+  | "ILK_REGISTRY"
+  | "CLIPPER_MOM";
 
 class ChainLog {
   constructor(private readonly chainLog: ChainLogContract) {}
@@ -162,7 +163,9 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
       const chip = await clip.chip();
       const tip = await clip.tip();
       return {
+        ilk: i,
         contract,
+        address: clipAddress,
         buf,
         tail: tail.toNumber(),
         cusp,
@@ -181,6 +184,22 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
       return {
         ilk: i,
         mat,
+      };
+    })
+  );
+
+  const clipperMomAddress = await chainlog.getAddressOf("CLIPPER_MOM");
+  const clipperMomContract = await ethers.getContractAt(
+    "ClipperMom",
+    clipperMomAddress
+  );
+  const clipperMom = await Promise.all(
+    clips.map(async (clip) => {
+      const tolerance = await clipperMomContract.tolerance(clip.address);
+      return {
+        ilk: clip.ilk,
+        contract: clip.contract,
+        tolerance,
       };
     })
   );
@@ -246,6 +265,11 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
           ilk,
           mat: mat.toString(),
         })),
+        clipperMom: [...clipperMom].map(({ ilk, contract, tolerance }) => ({
+          ilk,
+          contract,
+          tolerance: tolerance.toString(),
+        })),
       },
       null,
       2
@@ -297,10 +321,10 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
         },
         jug: {
           base: normalize(jug.base, Unit.Ray),
-          ilk: [...jugIlk].map(({ilk, duty}) => ({
+          ilk: [...jugIlk].map(({ ilk, duty }) => ({
             ilk,
             duty: normalize(duty, Unit.Ray),
-          }))
+          })),
         },
         pot: {
           dsr: normalize(pot.dsr, Unit.Ray),
@@ -316,6 +340,11 @@ export async function viewParams(hre: HardhatRuntimeEnvironment) {
         spot: [...spotIlk].map(({ ilk, mat }) => ({
           ilk,
           mat: normalize(mat, Unit.Ray),
+        })),
+        clipperMom: [...clipperMom].map(({ ilk, contract, tolerance }) => ({
+          ilk,
+          contract,
+          tolerance: normalize(tolerance, Unit.Ray),
         })),
       },
       null,
