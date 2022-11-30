@@ -22,7 +22,6 @@ export const lockForVote = async function (hre: HardhatRuntimeEnvironment, args:
 
   const hat = await chiefContract.hat()
 
-
   const approval = await chiefContract.approvals(hat)
   console.log(`current hat: ${hat} and its approvals: ${approval}`)
 

@@ -14,6 +14,8 @@ import {
   lockForVote,
   freeForVote,
   voteForAddressList,
+  createAddressListCandidateForVote,
+  moveVoteToSetOfCandidates,
 } from "./tasks";
 import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
@@ -97,6 +99,22 @@ task(
   .addParam("addressList", 'comma-separated address list to vote. list will be sorted when given to contract.')
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
     voteForAddressList(hre, args)
+  );
+
+task(
+  "createAddressListCandidateForVote",
+  "create address list candidate for vote. use dschief.etch()")
+  .addParam("addressList", 'comma-separated address list to vote. list will be sorted when given to contract.')
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    createAddressListCandidateForVote(hre, args)
+  );
+
+task(
+  "moveVoteToSetOfCandidates",
+  "move vote to already existing set of candidate. use dschief.vote()")
+  .addParam("slate", 'hash value of candidate address set (called slate)')
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    moveVoteToSetOfCandidates(hre, args)
   );
 
 

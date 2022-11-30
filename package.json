@@ -19,6 +19,8 @@
     "lockForVote:goerli": "npx hardhat --network goerli lockForVote",
     "freeForVote:goerli": "npx hardhat --network goerli freeForVote",
     "voteForAddressList:goerli": "npx hardhat --network goerli voteForAddressList",
+    "createAddressListCandidateForVote:goerli": "npx hardhat --network goerli createAddressListCandidateForVote",
+    "moveVoteToSetOfCandidates:goerli": "npx hardhat --network goerli moveVoteToSetOfCandidates",
     "help": "npx hardhat --help"
   },
   "keywords": [],

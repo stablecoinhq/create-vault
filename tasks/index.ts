@@ -10,3 +10,5 @@ export * from "./viewParams";
 export * from "./lockForVote"
 export * from "./freeForVote"
 export * from "./voteForAddressList"
+export * from "./createAddressListCandidateForVote"
+export * from "./moveVoteToSetOfCandidates"
