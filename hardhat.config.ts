@@ -16,6 +16,8 @@ import {
   voteForAddressList,
   createAddressListCandidateForVote,
   moveVoteToSetOfCandidates,
+  joinDsr,
+  exitDsr,
 } from "./tasks";
 import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
@@ -77,9 +79,11 @@ task("viewAuction", "view auction state to check condition")
     viewAuction(hre, args)
   );
 
-task("viewParams", "view each contract's parameters").setAction(
-  (_args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewParams(hre)
-);
+task("viewParams", "view each contract's parameters")
+  .addParam("contractType", "contract type to inspect", "all")
+  .setAction(
+    (args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewParams(hre, args)
+  );
 
 task("lockForVote", "lock some maker token for voting")
   .addParam("amount", "amount to lock maker token")
@@ -115,6 +119,21 @@ task(
   .addParam("slate", 'hash value of candidate address set (called slate)')
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
     moveVoteToSetOfCandidates(hre, args)
+  );
+task(
+  "joinDsr",
+  "drip pot and join dsr for a specified amount of dai")
+  .addParam("dai", 'amount of dai to join')
+  .addOptionalParam("gasLimit", "gas limit", undefined)
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    joinDsr(hre, args)
+  );
+task(
+  "exitDsr",
+  "drip pot and exit dsr for a specified amount of dai")
+  .addParam("dai", 'amount of dai to exit')
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    exitDsr(hre, args)
   );
 
 
