@@ -10,38 +10,36 @@ export async function joinDsr(hre: HardhatRuntimeEnvironment, args: TaskArgument
     if (! +args.dai) {
         throw new Error("Please specify valid dai amount");
     }
-    const dai = BigNumber.from(+args.dai).mul(value1e18)
+    const daiAmount = BigNumber.from(+args.dai).mul(value1e18)
+    const [myAccount] = await ethers.getSigners();
     if (chainId) {
-        // prepare pot contract
+        // prepare proxy contract
         const chainlog = await ChainLog.fromEthers(chainId, ethers);
+        const proxyAddress = await chainlog.getAddressOf("PROXY_ACTIONS_DSR");
+        const proxyContract = await ethers.getContractAt("DssProxyActionsDsr", proxyAddress);
+
+        const daiJoinAddress = await chainlog.getAddressOf("MCD_JOIN_DAI");
         const potAddress = await chainlog.getAddressOf("MCD_POT");
-        const potContract = await ethers.getContractAt("Pot", potAddress);
 
-        // check hope is enabled
-        const vatAddress = await chainlog.getAddressOf("MCD_VAT");
-        const vatContract = await ethers.getContractAt("Vat", vatAddress);
-        const [myAccount] = await ethers.getSigners();
-        const hopeIsAlreadyExecuted = await vatContract.can(myAccount.address, potAddress)
-        console.log(`hopeIsAlreadyExecuted: ${hopeIsAlreadyExecuted}`)
-        if (!parseInt(hopeIsAlreadyExecuted.toString())) {
-            //required only once
-            console.log(`enable hope for ${potAddress}`)
-            const vatHopeResult = await submitAndWait(
-                vatContract.hope(potAddress)
-            );
-            console.log(vatHopeResult)
+        // approve token
+        const daiAddress = await chainlog.getAddressOf("MCD_DAI");
+        const daiContract = await ethers.getContractAt("Dai", daiAddress);
+
+        // check allowance
+        const allowance = await daiContract.allowance(myAccount.address, proxyAddress)
+        console.log(`checking allowance: ${allowance}, needed: ${daiAmount}`)
+        if (BigNumber.from(allowance).lt(daiAmount)) {
+            console.log(`approve token for MCD_DAI (approve)`)
+            const approveReceipt = await submitAndWait(daiContract.approve(proxyAddress, daiAmount));
+            console.log(approveReceipt)
         }
 
-        // you need now === rho condition so the following two must be run in same tx.
-        // the following does not work  :/
-        if (false) {
-            // drip once before join
-            const dripReceipt = await submitAndWait(potContract.drip({ gasLimit: args.gasLimit ?? 80232 }))
-            console.log(dripReceipt)
-
-            // join after drip and hope
-            const joinReceipt = await submitAndWait(potContract.join(dai))
-            console.log(joinReceipt)
-        }
+        // run proxy
+        const proxyJoinReceipt = await submitAndWait(
+            proxyContract.join(
+                daiJoinAddress, potAddress, daiAmount,
+            )
+        )
+        console.log(proxyJoinReceipt)
     }
 }
