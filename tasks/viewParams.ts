@@ -1,37 +1,5 @@
 import { HardhatEthersHelpers, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
-import { ChainLog as ChainLogContract } from "../typechain-types";
-import { toHex, displayUnits as normalize, Unit } from "./utils";
-
-const CHAINLOG_MAINNET = "0xda0ab1e0017debcd72be8599041a2aa3ba7e740f";
-enum Contracts {
-  MCD_ADM = "MCD_ADM",
-  MCD_VAT = "MCD_VAT",
-  MCD_DOG = "MCD_DOG",
-  MCD_FLOP = "MCD_FLOP",
-  MCD_FLAP = "MCD_FLAP",
-  MCD_JUG = "MCD_JUG",
-  MCD_VOW = "MCD_VOW",
-  MCD_PAUSE = "MCD_PAUSE",
-  MCD_POT = "MCD_POT",
-  ILK_REGISTRY = "ILK_REGISTRY",
-  CLIPPER_MOM = "CLIPPER_MOM",
-  MCD_GOV = "MCD_GOV"
-}
-
-class ChainLog {
-  constructor(private readonly chainLog: ChainLogContract) { }
-
-  async getAddressOf(contract: string): Promise<string>;
-  async getAddressOf(contract: Contracts): Promise<string>;
-  async getAddressOf(contract: Contracts | string) {
-    return this.chainLog.getAddress(toHex(contract));
-  }
-
-  static async fromEthers(ethers: HardhatEthersHelpers) {
-    const chainlog = await ethers.getContractAt("ChainLog", CHAINLOG_MAINNET);
-    return new ChainLog(chainlog);
-  }
-}
+import { toHex, displayUnits as normalize, Unit, ChainLog, Contracts } from "./utils";
 
 class ParamsViewer {
   private chainlog: ChainLog
@@ -373,10 +341,7 @@ class ParamsViewer {
     if (!chainId || chainId !== 1) {
       throw new Error("This command only works on mainnet");
     }
-    // 対象の担保
-    const ilks: string[] = ["ETH-A"];
 
-    // dog.Hole [rad], chop [Wad], hole [Rad]
     const dsTokenAddress = await chainlog.getAddressOf("MCD_GOV");
     const dsTokenContract = await ethers.getContractAt("DSToken", dsTokenAddress);
     const totalSupplyBigNum = await dsTokenContract.totalSupply()
@@ -396,9 +361,9 @@ class ParamsViewer {
 
 export async function viewParams(hre: HardhatRuntimeEnvironment, args: TaskArguments) {
   const { ethers } = hre;
-  const chainlog = await ChainLog.fromEthers(ethers);
   const { chainId } = hre.network.config;
   if (chainId) {
+    const chainlog = await ChainLog.fromEthers(chainId, ethers);
     const contractType = (Object.keys(Contracts).includes(args.contractType)) ? (args.contractType as Contracts) : "all"
     const paramsViewer = new ParamsViewer(chainlog, chainId, ethers)
     await paramsViewer.run(contractType)

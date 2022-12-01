@@ -16,6 +16,8 @@ import {
   voteForAddressList,
   createAddressListCandidateForVote,
   moveVoteToSetOfCandidates,
+  joinDsr,
+  exitDsr,
 } from "./tasks";
 import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
@@ -117,6 +119,21 @@ task(
   .addParam("slate", 'hash value of candidate address set (called slate)')
   .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
     moveVoteToSetOfCandidates(hre, args)
+  );
+task(
+  "joinDsr",
+  "drip pot and join dsr for a specified amount of dai")
+  .addParam("dai", 'amount of dai to join')
+  .addOptionalParam("gasLimit", "gas limit", undefined)
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    joinDsr(hre, args)
+  );
+task(
+  "exitDsr",
+  "drip pot and exit dsr for a specified amount of dai")
+  .addParam("dai", 'amount of dai to exit')
+  .setAction((args: TaskArguments, hre: HardhatRuntimeEnvironment) =>
+    exitDsr(hre, args)
   );
 
 
