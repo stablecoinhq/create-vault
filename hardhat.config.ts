@@ -77,9 +77,11 @@ task("viewAuction", "view auction state to check condition")
     viewAuction(hre, args)
   );
 
-task("viewParams", "view each contract's parameters").setAction(
-  (_args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewParams(hre)
-);
+task("viewParams", "view each contract's parameters")
+  .addParam("contractType", "contract type to inspect", "all")
+  .setAction(
+    (args: TaskArguments, hre: HardhatRuntimeEnvironment) => viewParams(hre, args)
+  );
 
 task("lockForVote", "lock some maker token for voting")
   .addParam("amount", "amount to lock maker token")

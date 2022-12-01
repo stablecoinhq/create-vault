@@ -21,6 +21,7 @@
     "voteForAddressList:goerli": "npx hardhat --network goerli voteForAddressList",
     "createAddressListCandidateForVote:goerli": "npx hardhat --network goerli createAddressListCandidateForVote",
     "moveVoteToSetOfCandidates:goerli": "npx hardhat --network goerli moveVoteToSetOfCandidates",
+    "viewParams:mainnet": "npx hardhat --network mainnet viewParams",
     "help": "npx hardhat --help"
   },
   "keywords": [],
