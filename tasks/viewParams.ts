@@ -350,11 +350,48 @@ class ParamsViewer {
     }, null, 2))
   }
 
+  private async getParamsVow() {
+    const chainlog = this.chainlog
+    const ethers = this.ethers
+    const vowAddress = await chainlog.getAddressOf("MCD_VOW");
+    const vowContract = await ethers.getContractAt("Vow", vowAddress);
+    const [flapper, flopper, Ash, sump] = await Promise.all([
+      vowContract.flapper(),
+      vowContract.flopper(),
+      vowContract.Ash(),
+      vowContract.sump(),
+    ])
+    console.log(JSON.stringify({
+      flapper,
+      flopper,
+      Ash: Ash.toString(),
+      sump: sump.toString(),
+    }, null, 2))
+  }
+
+  private async getParamsClipper(contractType: Contracts) {
+    const chainlog = this.chainlog
+    const ethers = this.ethers
+    const address = await chainlog.getAddressOf(contractType);
+    const contract = await ethers.getContractAt("Clipper", address);
+    const [spotter, dog] = await Promise.all([contract.spotter(), contract.dog()])
+    console.log(JSON.stringify({
+      spotter,
+      dog
+    }, null, 2))
+  }
+
   public async run(contractType: Contracts | "all"): Promise<void> {
     if (contractType === "all") {
       await this.runAll()
     } else if (contractType === Contracts.MCD_GOV) {
       await this.getParamsGovernance();
+    } else if (contractType === Contracts.MCD_VOW) {
+      await this.getParamsVow();
+    } else if (contractType === Contracts.MCD_CLIP_ETH_A) {
+      await this.getParamsClipper(contractType);
+    } else if (contractType === Contracts.MCD_CLIP_FAU_A) {
+      await this.getParamsClipper(contractType);
     }
   }
 }

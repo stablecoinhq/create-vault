@@ -84,5 +84,7 @@ export enum Contracts {
   MCD_POT = "MCD_POT",
   ILK_REGISTRY = "ILK_REGISTRY",
   CLIPPER_MOM = "CLIPPER_MOM",
-  MCD_GOV = "MCD_GOV"
+  MCD_GOV = "MCD_GOV",
+  MCD_CLIP_ETH_A = "MCD_CLIP_ETH_A",
+  MCD_CLIP_FAU_A = "MCD_CLIP_FAU_A",
 }
