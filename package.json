@@ -20,6 +20,7 @@
     "freeForVote:goerli": "npx hardhat --network goerli freeForVote",
     "voteForAddressList:goerli": "npx hardhat --network goerli voteForAddressList",
     "createAddressListCandidateForVote:goerli": "npx hardhat --network goerli createAddressListCandidateForVote",
+    "createAddressListCandidateForVote:local": "npx hardhat --network localhost createAddressListCandidateForVote",
     "moveVoteToSetOfCandidates:goerli": "npx hardhat --network goerli moveVoteToSetOfCandidates",
     "viewParams:mainnet": "npx hardhat --network mainnet viewParams",
     "joinDsr:goerli": "npx hardhat --network goerli joinDsr",
